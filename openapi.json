@@ -1,0 +1,362 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Chronos API Collection",
+    "description": "Documentation for the various APIs used in the Chronos Workflows",
+    "version": "1.0.1"
+  },
+  "tags": [
+    {
+      "name": "Data Standardization Service",
+      "description": "Exposes an API to obtain standardized PII Data"
+    },
+    {
+      "name": "DPI Velocity Service",
+      "description": "Exposes an API to obtain Chronos Velocity Rule Codes"
+    }
+  ],
+  "paths": {
+    "/standardize": {
+      "post": {
+        "tags": [
+          "Data Standardization Service"
+        ],
+        "summary": "Returns standardized PII data",
+        "description": "* **General Idea:** Accepts unprocessed customer inputs and returns standardized PII.\n* **Implementation Details:**\n  * This API can support standardization for more than one transactions\n  * It expects a list of standardization inputs grouped by a transactionId and returns standardized outputs with the same grouping\n* **Future Scope:**\n  * This API can be extended to support standardization for a variety of PII and non PII fields in the future\n",
+        "requestBody": {
+          "description": "* RAW PII (without any modification) as received in the HTTP Request from the end-user\n",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/components/schemas/StandardizationInput"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "object"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/StandardizationOutput"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/chronos/velocity": {
+      "post": {
+        "tags": [
+          "DPI Velocity Service"
+        ],
+        "summary": "Returns Chronos Velocity Rule Codes",
+        "description": "Accepts DPIVelocityRequest and returns DPIVelocityResponse - An encapsulation of all chronos velocity rule codes grouped by vendor",
+        "requestBody": {
+          "description": "* RAW PII (without any modification) as received in the HTTP Request from the end-user\n",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DpiVelocityRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "object"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/DpiVelocityResponse"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "DpiVelocityRequest": {
+        "required": [
+          "transactionMetadata",
+          "customerInputs"
+        ],
+        "type": "object",
+        "properties": {
+          "transactionMetadata": {
+            "$ref": "#/components/schemas/TransactionMetadata"
+          },
+          "customerInputs": {
+            "$ref": "#/components/schemas/CustomerInputs"
+          }
+        }
+      },
+      "TransactionMetadata": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "example": "c4479f03-b3c8-441b-922d-b34cae3cfaa7"
+          },
+          "transactionDate": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1637766381455,
+            "description": "This is used to represent the timestamp of the transaction (in epoch milliseconds). In code the datatype should be a Long"
+          },
+          "accountId": {
+            "type": "integer",
+            "format": "int64",
+            "example": 1375,
+            "description": "The accountId associated with the customer making this transaction. In code the datatype should be a Long"
+          },
+          "isInternal": {
+            "type": "boolean",
+            "example": true,
+            "description": "A flag to indicate whether this transaction is being performed by a customer or an internal socure user"
+          }
+        }
+      },
+      "CustomerInputs": {
+        "type": "object",
+        "properties": {
+          "dob": {
+            "type": "string",
+            "example": "05-28-1990",
+            "description": "The unaltered dob value that is received in the customer request"
+          },
+          "email": {
+            "type": "string",
+            "example": "jermie.shawn@gmail.com",
+            "description": "The unaltered email address value that is received in the customer request"
+          },
+          "firstName": {
+            "type": "string",
+            "example": "jermie",
+            "description": "The unaltered first name value that is received in the customer request"
+          },
+          "surName": {
+            "type": "string",
+            "example": "shawn",
+            "description": "The unaltered surname value that is received in the customer request"
+          },
+          "ipAddress": {
+            "type": "string",
+            "example": "192.168.86.34",
+            "description": "The unaltered ipAddress value that is received in the customer request"
+          },
+          "mobileNumber": {
+            "type": "string",
+            "example": 9012510876,
+            "description": "The unaltered mobileNumber value that is received in the customer request"
+          },
+          "nationalId": {
+            "type": "string",
+            "example": "311-22-1234",
+            "description": "The unaltered nationalId value that is received in the customer request"
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "properties": {
+          "city": {
+            "type": "string",
+            "example": "Palo Alto",
+            "description": "The unaltered city value that is received in the customer request"
+          },
+          "country": {
+            "type": "string",
+            "example": "United States Of America",
+            "description": "The unaltered country value that is received in the customer request"
+          },
+          "physicalAddress": {
+            "type": "string",
+            "example": "1600 Pennsylvania Avenue",
+            "description": "The unaltered physicalAddress value that is received in the customer request"
+          },
+          "physicalAddress2": {
+            "type": "string",
+            "example": "Suite 1-5",
+            "description": "The unaltered physicalAddress2 value that is received in the customer request"
+          },
+          "zip": {
+            "type": "string",
+            "example": 49006,
+            "description": "The unaltered zip value that is received in the customer request"
+          }
+        }
+      },
+      "NumericalRuleCodes": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": 200015,
+            "description": "The rule code identifier"
+          },
+          "value": {
+            "type": "number",
+            "format": "double",
+            "example": 5.5,
+            "description": "The double value associated with the rule code identifier"
+          }
+        }
+      },
+      "DpiVelocityResponse": {
+        "type": "object",
+        "properties": {
+          "vendor": {
+            "type": "string",
+            "example": "VCEVL",
+            "description": "Vendor Identifier that represents a logical grouping of rule codes by PII key (example - IPAddress or Email or NationalId etc)"
+          },
+          "numericalRuleCodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NumericalRuleCodes"
+            }
+          }
+        }
+      },
+      "StandardizationInput": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "example": "c4479f03-b3c8-441b-922d-b34cae3cfaa7"
+          },
+          "customerInputs": {
+            "$ref": "#/components/schemas/CustomerInputs"
+          }
+        }
+      },
+      "StandardizationOutput": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "example": "c4479f03-b3c8-441b-922d-b34cae3cfaa7"
+          },
+          "standardizedData": {
+            "type": "object",
+            "properties": {
+              "dob": {
+                "type": "string",
+                "example": "05-28-1990",
+                "description": "The standardized dob value"
+              },
+              "email": {
+                "type": "string",
+                "example": "jermie.shawn@gmail.com",
+                "description": "The standardized email value"
+              },
+              "firstName": {
+                "type": "string",
+                "example": "jermie",
+                "description": "The standardized firstName value"
+              },
+              "surName": {
+                "type": "string",
+                "example": "shawn",
+                "description": "The standardized surName value"
+              },
+              "ipAddress": {
+                "type": "string",
+                "example": "192.168.86.34",
+                "description": "The standardized ipAddress value"
+              },
+              "mobileNumber": {
+                "type": "string",
+                "example": 9012510876,
+                "description": "The standardized mobileNumber value"
+              },
+              "nationalId": {
+                "type": "string",
+                "example": "311-22-1234",
+                "description": "The standardized nationalId value"
+              },
+              "addressMetadata": {
+                "$ref": "#/components/schemas/AddressMetadata"
+              }
+            }
+          }
+        }
+      },
+      "AddressMetadata": {
+        "type": "object",
+        "properties": {
+          "deliveryLine1": {
+            "type": "string",
+            "example": "1600 Pennsylvania Avenue",
+            "description": "The delivery_line_1 value returned from AddressService"
+          },
+          "cityName": {
+            "type": "string",
+            "example": "Palo Alto",
+            "description": "The city_name value returned from AddressService"
+          },
+          "defaultCityName": {
+            "type": "string",
+            "example": "Palo Alto",
+            "description": "The default_city_name value returned from AddressService"
+          },
+          "stateAbbreviation": {
+            "type": "string",
+            "example": "CA",
+            "description": "The state_abbreviation value returned from AddressService"
+          },
+          "zipCode": {
+            "type": "string",
+            "example": 49006,
+            "description": "The zipcode value returned from AddressService"
+          },
+          "plus4Code": {
+            "type": "string",
+            "example": "49006-1234",
+            "description": "The plus4_code value returned from AddressService"
+          },
+          "country": {
+            "type": "string",
+            "example": "United States Of America",
+            "description": "The standardized country value"
+          }
+        }
+      }
+    }
+  }
+}
